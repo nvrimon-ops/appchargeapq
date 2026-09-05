@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appcharge — Account Statement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2ee;
+    --paper-raised: #ffffff;
+    --ink: #16261d;
+    --ink-dim: #4b5c50;
+    --line: #cdd6cd;
+    --accent: #1f7a4d;
+    --accent-ink: #ffffff;
+    --accent-soft: #dcefe2;
+    --flag: #b03a22;
+    --flag-soft: #f3ddd4;
+    --gold: #966424;
+    --gold-soft: #f1e6d2;
+    --shadow: 0 1px 2px rgba(22,38,29,.05), 0 14px 32px -18px rgba(22,38,29,.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0f1410;
+      --paper-raised: #161d18;
+      --ink: #e9f2ea;
+      --ink-dim: #93a599;
+      --line: #263229;
+      --accent: #4ade95;
+      --accent-ink: #0b1a10;
+      --accent-soft: #1c3626;
+      --flag: #ff8a68;
+      --flag-soft: #3a2018;
+      --gold: #e0b464;
+      --gold-soft: #352a14;
+      --shadow: 0 1px 2px rgba(0,0,0,.5), 0 20px 44px -20px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f1410;
+    --paper-raised: #161d18;
+    --ink: #e9f2ea;
+    --ink-dim: #93a599;
+    --line: #263229;
+    --accent: #4ade95;
+    --accent-ink: #0b1a10;
+    --accent-soft: #1c3626;
+    --flag: #ff8a68;
+    --flag-soft: #3a2018;
+    --gold: #e0b464;
+    --gold-soft: #352a14;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 20px 44px -20px rgba(0,0,0,.65);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Archivo', system-ui, sans-serif;
+    line-height: 1.5;
+  }
+  .mono { font-family: 'Space Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 700; }
+  img { max-width: 100%; }
+  ::selection { background: var(--accent-soft); }
+
+  .sheet { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  .tear {
+    max-width: 880px; margin: 40px auto; height: 1px;
+    background-image: repeating-linear-gradient(to right, var(--line) 0 8px, transparent 8px 16px);
+  }
+
+  .hero { padding: 56px 24px 40px; max-width: 880px; margin: 0 auto; }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero .kicker, .hero h1, .hero .tagline, .hero .meta-row, .hero .note {
+      opacity: 0; animation: heroIn .7s ease forwards;
+    }
+    .hero .kicker { animation-delay: .05s; }
+    .hero h1 { animation-delay: .12s; }
+    .hero .tagline { animation-delay: .22s; }
+    .hero .meta-row { animation-delay: .32s; }
+    .hero .note { animation-delay: .42s; }
+  }
+  @keyframes heroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .hero .kicker { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-dim); letter-spacing: .04em; }
+  .hero h1 { font-size: clamp(38px, 6.5vw, 64px); letter-spacing: -.01em; margin-top: 10px; }
+  .hero .tagline { font-size: clamp(16px, 2vw, 19px); color: var(--ink-dim); margin-top: 10px; max-width: 56ch; }
+  .hero .meta-row { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-dim); }
+  .hero .meta-row b { color: var(--ink); font-weight: 700; }
+  .hero .note { margin-top: 26px; font-size: 14px; color: var(--ink-dim); border-left: 2px solid var(--gold); padding: 10px 16px; background: var(--gold-soft); border-radius: 0 8px 8px 0; max-width: 62ch; }
+
+  section { padding: 8px 24px 8px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .section-head .num { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-dim); }
+  section h2 { font-size: clamp(22px, 3vw, 30px); }
+
+  p { color: var(--ink); }
+  .lede { font-size: 15.5px; color: var(--ink-dim); max-width: 68ch; line-height: 1.65; }
+
+  .summary-box { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); padding: 4px 20px; margin: 20px 0; }
+  .summary-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row .lbl { color: var(--ink-dim); }
+  .summary-row .val { font-family: 'Space Mono', monospace; font-weight: 700; text-align: right; }
+
+  .ledger { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 8px 22px; margin: 22px 0; }
+  .ledger-row { display: grid; grid-template-columns: 96px 1fr auto; gap: 14px; align-items: center; padding: 16px 0; border-bottom: 1px dashed var(--line); position: relative; }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row .date { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-dim); }
+  .ledger-row .label { font-size: 14.5px; }
+  .ledger-row .amount { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(17px, 2.2vw, 22px); }
+  .ledger-row.is-latest .amount { color: var(--accent); }
+  .ledger-row.is-latest .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-right: 8px; }
+  @media (prefers-reduced-motion: no-preference) { .ledger-row.is-latest .dot { animation: pulse 2.2s ease-in-out infinite; } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); } 50% { box-shadow: 0 0 0 6px transparent; } }
+  .ledger-annotation { margin-top: 4px; padding: 14px 16px; font-size: 13.5px; color: var(--ink-dim); background: var(--accent-soft); border-radius: 8px; }
+
+  .stack-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+  .stack-chip { font-family: 'Space Mono', monospace; font-size: 12px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-dim); }
+  .reconcile { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 20px 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .tool-tab { font-family: 'Space Mono', monospace; font-size: 13px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+  .reconcile .op { color: var(--ink-dim); font-size: 15px; }
+  .reconcile .gap-flag { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--flag); background: var(--flag-soft); padding: 5px 10px; border-radius: 999px; }
+
+  /* ---- illustrative dashboard ---- */
+  .fictional-banner { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; color: var(--gold); border: 1px dashed var(--gold); border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; }
+  .dash-frame { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 20px 22px 22px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+  .kpi-tile { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--paper); }
+  .kpi-tile .kpi-label { font-size: 11.5px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .04em; }
+  .kpi-tile .kpi-value { font-family: 'Space Mono', monospace; font-weight: 700; font-size: clamp(22px, 3vw, 30px); margin-top: 4px; }
+  .kpi-tile .kpi-delta { display: inline-flex; align-items: center; gap: 5px; font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; margin-top: 6px; padding: 3px 8px; border-radius: 999px; }
+  .kpi-tile.is-critical .kpi-value { color: var(--flag); }
+  .kpi-tile.is-critical .kpi-delta { color: var(--flag); background: var(--flag-soft); }
+  .kpi-tile .kpi-baseline { font-size: 11px; color: var(--ink-dim); margin-top: 4px; }
+
+  .provider-chart { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .provider-row { display: grid; grid-template-columns: 90px 1fr 60px 100px; gap: 12px; align-items: center; }
+  .provider-row .p-name { font-size: 13px; font-weight: 600; }
+  .provider-track { height: 16px; border-radius: 4px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; }
+  .provider-fill { height: 100%; border-radius: 3px; }
+  .provider-fill.good { background: var(--accent); }
+  .provider-fill.critical { background: var(--flag); }
+  .provider-row .p-pct { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; text-align: right; }
+  .p-status { font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 3px 8px; border-radius: 999px; text-align: center; }
+  .p-status.good { color: var(--accent); background: var(--accent-soft); }
+  .p-status.critical { color: var(--flag); background: var(--flag-soft); }
+  .chart-ref-line { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink-dim); margin-top: -2px; }
+
+  .trace-wrap { margin-bottom: 18px; }
+  .trace-bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
+  .trace-seg { display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--ink); background: var(--paper); border-right: 1px solid var(--line); }
+  .trace-seg.critical { background: var(--flag-soft); color: var(--flag); font-weight: 700; }
+  .trace-labels { display: flex; margin-top: 6px; font-size: 11px; color: var(--ink-dim); justify-content: space-between; }
+
+  .dash-lower { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+  .log-panel { background: #0c1210; border: 1px solid #26332c; border-radius: 10px; padding: 14px 16px; font-family: 'Space Mono', monospace; font-size: 12px; line-height: 1.7; color: #8fe3b0; overflow-x: auto; }
+  .log-panel .err { color: #ff8a68; }
+  .log-panel .dim { color: #5c7568; }
+  .side-metric { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--paper); margin-bottom: 10px; }
+  .side-metric .sm-label { font-size: 11.5px; color: var(--ink-dim); }
+  .side-metric .sm-value { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 20px; margin-top: 2px; }
+  .side-metric.is-critical .sm-value { color: var(--flag); }
+  .side-metric.is-ok .sm-value { color: var(--accent); }
+  .side-metric .sm-note { font-size: 11.5px; color: var(--ink-dim); margin-top: 4px; }
+
+  .resolution-box { margin-top: 18px; padding: 16px 18px; border-radius: 10px; background: var(--accent-soft); }
+  .resolution-box .r-title { font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--accent); margin-bottom: 8px; }
+  .resolution-box ol { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--ink); }
+  .resolution-box li { margin-bottom: 4px; }
+
+  /* ---- power map ---- */
+  .group-label { font-family: 'Space Mono', monospace; font-size: 11.5px; letter-spacing: .05em; color: var(--ink-dim); margin: 22px 0 10px; }
+  .group-label:first-child { margin-top: 0; }
+  .roster { display: flex; flex-direction: column; gap: 10px; }
+  .roster-row { display: grid; grid-template-columns: 1.1fr 1.1fr 1.6fr auto; gap: 14px; align-items: center; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
+  .roster-row .name { font-weight: 700; font-size: 14px; }
+  .roster-row .title { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); }
+  .roster-row .why { font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; }
+  .roster-row.is-champion { border-color: var(--accent); border-width: 1.5px; }
+  .li-link { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--ink-dim); text-decoration: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; white-space: nowrap; }
+  .li-link:hover { border-color: var(--accent); color: var(--accent); }
+  .li-link.unverified { color: var(--gold); border-color: var(--gold); }
+  .signature-gap { margin-top: 14px; padding: 14px 16px; border-radius: 8px; background: var(--accent-soft); color: var(--ink); font-size: 13.5px; }
+
+  .timeline { display: flex; flex-direction: column; }
+  .t-row { display: grid; grid-template-columns: 96px 20px 1fr; gap: 4px 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .t-row:last-child { border-bottom: none; }
+  .t-row .date { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-dim); padding-top: 2px; }
+  .t-dotcol { display: flex; justify-content: center; }
+  .t-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); margin-top: 6px; }
+  .t-row.is-open .t-dot { background: var(--gold); }
+  .t-head { font-weight: 600; font-size: 14.5px; }
+  .t-desc { font-size: 13px; color: var(--ink-dim); margin-top: 2px; line-height: 1.5; }
+
+  .thesis { font-size: clamp(16px, 2vw, 19px); font-weight: 700; color: var(--accent); margin: 22px 0; }
+
+  .stamp-banner { display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; color: var(--flag); border: 1px dashed var(--flag); border-radius: 8px; padding: 10px 14px; margin-bottom: 18px; }
+  .meddpicc-grid { display: flex; flex-direction: column; gap: 10px; }
+  .m-row { display: grid; grid-template-columns: 64px 1fr; gap: 16px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; }
+  .m-row .letter { font-family: 'Space Mono', monospace; font-weight: 700; font-size: 22px; color: var(--ink-dim); }
+  .m-row.highlight .letter { color: var(--flag); }
+  .m-row .m-title { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; color: var(--ink-dim); margin-bottom: 4px; }
+  .m-row p { font-size: 13.5px; margin: 0; color: var(--ink); }
+
+  .email-card { background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 14px; }
+  .email-card summary { cursor: pointer; padding: 14px 18px; font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 10px; list-style: none; }
+  .email-card summary::-webkit-details-marker { display: none; }
+  .email-card summary .tag { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); font-weight: 700; }
+  .email-body-x { padding: 0 18px 18px; font-size: 13.5px; color: var(--ink-dim); line-height: 1.6; border-top: 1px dashed var(--line); }
+  .email-body-x p { margin: 12px 0 0; color: var(--ink-dim); }
+  .email-body-x .subj { color: var(--ink); font-weight: 600; font-family: 'Space Mono', monospace; font-size: 12.5px; margin-top: 12px; }
+
+  footer { max-width: 880px; margin: 40px auto 60px; padding: 0 24px; font-family: 'Space Mono', monospace; font-size: 11.5px; color: var(--ink-dim); }
+
+  @media (max-width: 640px) {
+    .roster-row { grid-template-columns: 1fr; }
+    .ledger-row { grid-template-columns: 74px 1fr; }
+    .ledger-row .amount { grid-column: 1 / -1; text-align: left; margin-top: 4px; }
+    .kpi-row { grid-template-columns: 1fr; }
+    .dash-lower { grid-template-columns: 1fr; }
+    .provider-row { grid-template-columns: 70px 1fr 44px; }
+    .provider-row .p-status { display: none; }
+  }
+
+  /* ---- scroll progress ---- */
+  .scroll-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0%; background: var(--accent); z-index: 50; transition: width .08s linear; }
+  @media (prefers-reduced-motion: reduce) { .scroll-progress { transition: none; } }
+
+  /* ---- growth trend chart ---- */
+  .trend-chart { margin: 18px 0 6px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 18px 20px 10px; }
+  .trend-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .trend-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .trend-area { fill: var(--accent); opacity: .12; }
+  .trend-grid { stroke: var(--line); stroke-width: 1; }
+  .trend-dot { fill: var(--paper-raised); stroke: var(--accent); stroke-width: 2.5; }
+  .trend-dot.is-latest { fill: var(--accent); }
+  .trend-label { font-family: 'Space Mono', monospace; font-size: 11px; fill: var(--ink-dim); }
+  .trend-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; fill: var(--ink); }
+  .trend-value.is-latest { fill: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    .trend-pulse { animation: trendpulse 2.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  }
+  @keyframes trendpulse { 0%, 100% { r: 5; opacity: 1; } 50% { r: 8; opacity: .5; } }
+
+  /* ---- hover micro-interactions ---- */
+  .roster-row, .stack-chip, .tool-tab, .kpi-tile { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+  .roster-row:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: var(--shadow); }
+  .stack-chip:hover, .tool-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .kpi-tile:hover { transform: translateY(-2px); }
+  @media (prefers-reduced-motion: reduce) {
+    .roster-row, .stack-chip, .tool-tab, .kpi-tile { transition: none; }
+    .roster-row:hover, .kpi-tile:hover { transform: none; }
+  }
+
+  /* ---- count-up + reveal helpers ---- */
+  .provider-fill { transition: width 1s cubic-bezier(.22,.9,.3,1); }
+  @media (prefers-reduced-motion: reduce) { .provider-fill { transition: none; } }
+  .type-cursor { display: inline-block; width: 7px; height: 13px; background: #8fe3b0; margin-left: 2px; vertical-align: -2px; }
+  @media (prefers-reduced-motion: no-preference) { .type-cursor.is-blinking { animation: blink 1s step-end infinite; } }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <div class="hero">
+    <div class="kicker">ACCOUNT STATEMENT · SELF-INITIATED · NOT ASSIGNED</div>
+    <h1>Appcharge</h1>
+    <p class="tagline">Direct-to-consumer payments and commerce for mobile game publishers — built to route around the app stores' 30% cut.</p>
+    <div class="meta-row">
+      <span><b>Tel Aviv</b> · HQ</span>
+      <span><b>2022</b> · Founded</span>
+      <span><b>~140</b> · Employees</span>
+      <span><b>$89M</b> · Total raised</span>
+    </div>
+    <div class="note">Built the same way as my assigned Roll20 exercise — full research, power map, and a MEDDPICC pass — on a company nobody asked me to research, treated as if it's the first account on my list.</div>
+  </div>
+
+  <div class="tear"></div>
+
+  <section id="overview">
+    <div class="sheet">
+      <div class="section-head"><h2>Company Overview &amp; Business Model</h2><span class="num mono">01</span></div>
+      <p class="lede">Appcharge gives mobile game publishers their own web-based storefronts and alternative billing, so players pay the publisher directly instead of through Apple or Google's in-app purchase system. Founded in 2022 by <b>Maor Sason</b> (CEO — previously sold ad-tech company Appush to Magic Software Enterprise) and <b>Roei Barassi</b> (Co-Founder &amp; General Manager), with <b>Shai Bouju</b> as the third co-founder and Chief Innovation Officer.</p>
+      <div class="summary-box">
+        <div class="summary-row"><span class="lbl">Revenue model</span><span class="val">Take rate on DTC transaction volume</span></div>
+        <div class="summary-row"><span class="lbl">Series A</span><span class="val">$26M · Jan 2024</span></div>
+        <div class="summary-row"><span class="lbl">Series B</span><span class="val">$58M · Aug 2025 · led by IVP</span></div>
+        <div class="summary-row"><span class="lbl">Games on platform</span><span class="val">150+ (incl. 1/3 of top-grossing titles)</span></div>
+        <div class="summary-row"><span class="lbl">Reported publisher lift</span><span class="val">+35% profit, on average</span></div>
+      </div>
+      <p class="thesis">This is a payments company. Uptime and correctness at checkout aren't operational nice-to-haves here — they're the entire product.</p>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="velocity">
+    <div class="sheet">
+      <div class="section-head"><h2>Growth Velocity</h2><span class="num mono">02</span></div>
+      <p class="lede">Annualized direct-to-consumer transaction volume, tracked at three public checkpoints:</p>
+
+      <div class="trend-chart">
+        <svg viewBox="0 0 640 180" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Annualized DTC transaction volume rising from 500 million dollars in July 2025 to over 1 billion dollars in March 2026">
+          <line class="trend-grid" x1="40" y1="20" x2="40" y2="130"></line>
+          <line class="trend-grid" x1="40" y1="130" x2="600" y2="130"></line>
+          <path class="trend-area" d="M80,110 L340,80 L580,20 L580,130 L80,130 Z"></path>
+          <path class="trend-line" d="M80,110 L340,80 L580,20"></path>
+          <circle class="trend-dot" cx="80" cy="110" r="5"></circle>
+          <circle class="trend-dot" cx="340" cy="80" r="5"></circle>
+          <circle class="trend-dot is-latest trend-pulse" cx="580" cy="20" r="5"></circle>
+          <text class="trend-label" x="80" y="150" text-anchor="middle">JUL 2025</text>
+          <text class="trend-label" x="340" y="150" text-anchor="middle">JAN 2026</text>
+          <text class="trend-label" x="580" y="150" text-anchor="middle">MAR 2026</text>
+          <text class="trend-value" x="80" y="98" text-anchor="middle">$500M</text>
+          <text class="trend-value" x="340" y="68" text-anchor="middle">$700M</text>
+          <text class="trend-value is-latest" x="560" y="12" text-anchor="end">$1.0B+</text>
+        </svg>
+      </div>
+
+      <div class="ledger">
+        <div class="ledger-row"><div class="date mono">JUL 2025</div><div class="label">Annualized DTC volume</div><div class="amount" data-count="500" data-prefix="$" data-suffix="M">$500M</div></div>
+        <div class="ledger-row"><div class="date mono">JAN 2026</div><div class="label">Annualized DTC volume</div><div class="amount" data-count="700" data-prefix="$" data-suffix="M">$700M</div></div>
+        <div class="ledger-row is-latest"><div class="date mono">MAR 2026</div><div class="label"><span class="dot"></span>Annualized DTC volume — public milestone</div><div class="amount" data-count="1.0" data-prefix="$" data-suffix="B+" data-decimals="1">$1.0B+</div></div>
+      </div>
+      <div class="ledger-annotation">Roughly a <b>doubling in eight months</b>, on a growth rate reported as ~14x year-over-year (source text renders this ambiguously in places — treat the multiple as approximate, not exact, if pressed). Whatever observability covered the business at $500M now has to cover more than double the transaction surface.</div>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="stack">
+    <div class="sheet">
+      <div class="section-head"><h2>The Stack, Reconciled</h2><span class="num mono">03</span></div>
+      <p class="lede">Sourced directly from Appcharge's own open DevOps Engineer requisition — job postings are one of the richest, most underused tech-stack signals available.</p>
+      <div class="stack-facts">
+        <span class="stack-chip">Kubernetes · AWS EKS</span>
+        <span class="stack-chip">GCP</span>
+        <span class="stack-chip">Crossplane + Terraform</span>
+        <span class="stack-chip">ArgoCD · Helm · GitHub Actions</span>
+        <span class="stack-chip">Confluent Kafka</span>
+        <span class="stack-chip">MongoDB Atlas</span>
+      </div>
+      <div class="reconcile">
+        <span class="tool-tab">Prometheus</span><span class="op">+</span>
+        <span class="tool-tab">Grafana</span><span class="op">+</span>
+        <span class="tool-tab">New Relic</span><span class="op">+</span>
+        <span class="tool-tab">OpenTelemetry</span>
+        <span class="gap-flag">NOT DATADOG</span>
+      </div>
+      <p class="lede" style="margin-top:14px;">Two clouds, an event-streaming layer, a managed document store, and observability split across three separate systems. During an incident, that's three tabs to correlate by hand — on a platform where every minute of blindness is a minute of unverified money movement.</p>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="dashboard-mock">
+    <div class="sheet">
+      <div class="section-head"><h2>What a Bad Morning Would Look Like</h2><span class="num mono">04</span></div>
+      <div class="fictional-banner">⚠ ILLUSTRATIVE MOCK — ALL DATA BELOW IS FICTIONAL, FOR DEMONSTRATION ONLY</div>
+      <p class="lede">A plausible incident, built from Appcharge's own confirmed stack (a payment provider integration, on a checkout service) — showing what a unified Datadog view would surface in the first three minutes, versus checking three separate tools by hand.</p>
+
+      <div class="dash-frame">
+        <div class="kpi-row">
+          <div class="kpi-tile is-critical">
+            <div class="kpi-label">Payment Success Rate</div>
+            <div class="kpi-value" data-count="70.2" data-suffix="%" data-decimals="1">0%</div>
+            <span class="kpi-delta">▼ 27.8 pts</span>
+            <div class="kpi-baseline">Normal: 98.0%</div>
+          </div>
+          <div class="kpi-tile is-critical">
+            <div class="kpi-label">Revenue — Today So Far</div>
+            <div class="kpi-value" data-count="142" data-prefix="$" data-suffix="K">$0K</div>
+            <span class="kpi-delta">▼ 29%</span>
+            <div class="kpi-baseline">Same time yesterday: $200K</div>
+          </div>
+          <div class="kpi-tile is-critical">
+            <div class="kpi-label">Avg. Checkout Response</div>
+            <div class="kpi-value" data-count="4.3" data-suffix="s" data-decimals="1">0.0s</div>
+            <span class="kpi-delta">▲ 5.4×</span>
+            <div class="kpi-baseline">Normal: 0.8s</div>
+          </div>
+        </div>
+
+        <div class="group-label">SUCCESS RATE BY PAYMENT PROVIDER — LAST 24H</div>
+        <div class="provider-chart">
+          <div class="provider-row">
+            <div class="p-name">PayPal</div>
+            <div class="provider-track"><div class="provider-fill critical" data-target-width="70" style="width:0%"></div></div>
+            <div class="p-pct mono">70%</div>
+            <div class="p-status critical">DEGRADED</div>
+          </div>
+          <div class="provider-row">
+            <div class="p-name">Stripe</div>
+            <div class="provider-track"><div class="provider-fill good" data-target-width="98" style="width:0%"></div></div>
+            <div class="p-pct mono">98%</div>
+            <div class="p-status good">HEALTHY</div>
+          </div>
+          <div class="provider-row">
+            <div class="p-name">Apple Pay</div>
+            <div class="provider-track"><div class="provider-fill good" data-target-width="99" style="width:0%"></div></div>
+            <div class="p-pct mono">99%</div>
+            <div class="p-status good">HEALTHY</div>
+          </div>
+        </div>
+        <div class="chart-ref-line">→ Isolated to one provider. Not a platform-wide outage.</div>
+
+        <div class="group-label" style="margin-top:22px;">TRACE — ONE FAILED TRANSACTION</div>
+        <div class="trace-wrap">
+          <div class="trace-bar">
+            <div class="trace-seg" style="flex:2">User → Checkout · 0.2s</div>
+            <div class="trace-seg" style="flex:1">Checkout → PayPal · 0.1s</div>
+            <div class="trace-seg critical" style="flex:20">PayPal API response · 4.0s · HTTP 429</div>
+          </div>
+          <div class="trace-labels"><span>0.0s</span><span>Total: 4.3s → error</span></div>
+        </div>
+
+        <div class="dash-lower">
+          <div>
+            <div class="group-label">LOG — EXACT ERROR</div>
+            <div class="log-panel" id="logPanel">
+              <span id="logTyped"></span><span class="type-cursor is-blinking" id="logCursor"></span>
+              <template id="logTemplate">[03:01:22] <span class="err">ERROR</span> payment-service-us-east-2
+PayPal API Error: 429 Too Many Requests
+<span class="dim">"Rate limit exceeded. Limit: 1000 req/min"</span>
+TransactionID: txn_89dj2k7f...
+Route: /v2/checkout/orders</template>
+            </div>
+          </div>
+          <div>
+            <div class="group-label">RULING OUT INFRASTRUCTURE</div>
+            <div class="side-metric is-critical">
+              <div class="sm-label">Error count (10 min)</div>
+              <div class="sm-value">5,140</div>
+            </div>
+            <div class="side-metric is-ok">
+              <div class="sm-label">payment-service CPU</div>
+              <div class="sm-value">34%</div>
+              <div class="sm-note">Normal range — not a capacity problem.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="resolution-box">
+          <div class="r-title">TIME TO DIAGNOSIS: ~3 MINUTES</div>
+          <ol>
+            <li>Provider breakdown shows PayPal only — not a platform-wide incident.</li>
+            <li>Trace + log show a 429 rate limit, not a crash or code defect.</li>
+            <li>Mitigate: shift ~50% of PayPal-routed traffic to Stripe temporarily, and open a limit-increase ticket with PayPal.</li>
+          </ol>
+        </div>
+      </div>
+      <p class="lede" style="margin-top:16px;">Without one platform: this is fifteen-plus minutes split across a Grafana board, a New Relic trace view, and raw pod logs — on a business where those fifteen minutes are measured directly in declined payments.</p>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="power-map">
+    <div class="sheet">
+      <div class="section-head"><h2>Power Map</h2><span class="num mono">05</span></div>
+
+      <div class="group-label">EXECUTIVE LEADERSHIP</div>
+      <div class="roster">
+        <div class="roster-row">
+          <div><div class="name">Maor Sason</div><div class="title">CEO &amp; Co-Founder</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Economic Buyer</div>
+          <div class="why">Final budget authority, freshly capitalized after a $58M round.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/maor-sason" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Amit Porat</div><div class="title">Chief Technology Officer</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Technical Sponsor</div>
+          <div class="why">Ex-Principal Eng Manager at Microsoft, ex-VP R&amp;D at CyberX. Owns all three engineering leads below.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/amit-porat-a4068728" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Nadav Hollander</div><div class="title">CFO · exact start date unconfirmed</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Finance Approval</div>
+          <div class="why">Previously CFO of Appush (Sason's prior company, sold to Magic Software). Sources conflict on 2025 start date/path at Appcharge — don't cite a specific month.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/nadav-hollander-a0a3aa188" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">David Stelzer</div><div class="title">CSO · joined Oct 13, 2025</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Strategic Growth</div>
+          <div class="why">20+ yrs gaming/entertainment — Epic Games, CAA, Sega, Xsolla.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/davidstelzer/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Paul Bowen</div><div class="title">CRO · joined ~Sep 2025</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Commercial</div>
+          <div class="why">Ex-CRO at StreamElements; ex-CEO AlgoLift; scaled monetization at Unity.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/pgbowen/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Shai Bouju</div><div class="title">Co-Founder &amp; CIO</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Innovation Sponsor</div>
+          <div class="why">Explicit innovation mandate — natural sponsor for a new platform bet.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/shai-bouju/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Roei Barassi</div><div class="title">Co-Founder &amp; GM</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Secondary Exec</div>
+          <div class="why">Publicly active in company messaging on growth and strategy.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/roei-barassi" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Fanny Beili</div><div class="title">VP Product</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Product Stakeholder</div>
+          <div class="why">Owns the checkout/storefront product experience directly.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/fanny-beili-386479179/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+      </div>
+
+      <div class="group-label">ENGINEERING &amp; PLATFORM — report to Amit Porat (CTO)</div>
+      <div class="roster">
+        <div class="roster-row is-champion">
+          <div><div class="name">Oz Giat</div><div class="title">Head of DevOps</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);font-weight:700;">Best-Fit Champion</div>
+          <div class="why">Almost certainly owns Prometheus/Grafana/New Relic day to day — the DevOps req reports up to him.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/ozgiat/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Erez Schiller</div><div class="title">Head of Platform</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Co-Decision-Maker</div>
+          <div class="why">Owns platform architecture — likely joint sign-off with Oz Giat on tooling.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/erez-schiller-157161131" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Elad Nahor</div><div class="title">Director of Engineering</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Engineering Peer</div>
+          <div class="why">Engineering leadership peer to the DevOps/Platform functions.</div>
+          <a class="li-link" href="https://il.linkedin.com/in/eladn" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+      </div>
+
+      <div class="group-label">PAYMENTS &amp; DATA — secondary contacts</div>
+      <div class="roster">
+        <div class="roster-row">
+          <div><div class="name">Raz Leshem</div><div class="title">Product Manager, Payments</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Secondary</div>
+          <div class="why">Owns the payments product surface this pain hypothesis is built on.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/raz-leshem-5b709512b/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+        <div class="roster-row">
+          <div><div class="name">Amir Mor</div><div class="title">Data / Platform Engineer</div></div>
+          <div class="why" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-dim);">Secondary</div>
+          <div class="why">Role title not independently re-verified beyond aggregator data.</div>
+          <a class="li-link" href="https://www.linkedin.com/in/amir-mor-9b76a524/" target="_blank" rel="noopener">LinkedIn ↗</a>
+        </div>
+      </div>
+
+      <div class="signature-gap">Revised entry point: <b>Oz Giat (Head of DevOps)</b> is the correct peer-level technical entry — he almost certainly owns the exact tools named in Appcharge's own job posting. <b>Amit Porat (CTO)</b> is the internal sponsor who'd approve a platform-level change; <b>Maor Sason (CEO)</b> is final commercial sign-off.<br><br><b>One thing worth knowing before you're asked:</b> Appcharge's careers page currently lists an <i>open VP R&amp;D role</i> — alongside a confirmed, tenured CTO (Amit Porat) with a full reporting line. That's not a contradiction: it most likely means a management layer is being added between the CTO and the three functional heads as the org keeps scaling. Frame it that way if it comes up, rather than treating the CTO and the open req as competing facts.</div>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="why-now">
+    <div class="sheet">
+      <div class="section-head"><h2>The 3 Whys</h2><span class="num mono">06</span></div>
+      <p class="lede"><b>Why anything?</b> Complexity scaled with the business — two clouds, an event-streaming layer, a managed database — while observability stayed split across three separate tools. <b>Why Datadog?</b> One dataset across the whole stack, and — for a payments platform — protection on verified money movement, not just user experience.</p>
+      <div class="timeline">
+        <div class="t-row"><div class="date mono">2022</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">Founded, Tel Aviv</div><div class="t-desc">Maor Sason &amp; Roei Barassi.</div></div></div>
+        <div class="t-row"><div class="date mono">JAN 2024</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">Series A — $26M</div></div></div>
+        <div class="t-row"><div class="date mono">JUL 2025</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">$500M annualized DTC volume</div></div></div>
+        <div class="t-row"><div class="date mono">AUG 2025</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">Series B — $58M, led by IVP</div><div class="t-desc">9 months after Series A; 14x YoY growth cited.</div></div></div>
+        <div class="t-row"><div class="date mono">SEP 2025</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">CFO + CRO hired</div><div class="t-desc">Nadav Hollander (CFO) and Paul Bowen (CRO) join within weeks of the raise.</div></div></div>
+        <div class="t-row"><div class="date mono">OCT 13 2025</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">CSO hired</div><div class="t-desc">David Stelzer (ex-Epic/CAA/Sega/Xsolla) joins as Chief Strategy Officer.</div></div></div>
+        <div class="t-row"><div class="date mono">JAN 2026</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">$700M annualized DTC volume</div></div></div>
+        <div class="t-row is-open"><div class="date mono">MAR 2026</div><div class="t-dotcol"><div class="t-dot"></div></div><div><div class="t-head">$1B+ annualized DTC volume</div><div class="t-desc">Public milestone coverage.</div></div></div>
+      </div>
+      <p class="thesis">Three new C-suite hires in about six weeks, right after a Series B, right as transaction volume doubled — a company professionalizing everywhere at once except, so far, its observability stack.</p>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="meddpicc">
+    <div class="sheet">
+      <div class="section-head"><h2>MEDDPICC</h2><span class="num mono">07</span></div>
+      <div class="stamp-banner">⚠ INTERNAL / INTERVIEW USE ONLY — NEVER SEND THIS SECTION TO A REAL PROSPECT</div>
+      <div class="meddpicc-grid">
+        <div class="m-row"><div class="letter">M</div><div><div class="m-title">METRICS</div><p>Protect uptime and transactional integrity on $1B+/yr processed; cut MTTR from a 3-tool manual correlation to single-pane detection.</p></div></div>
+        <div class="m-row"><div class="letter">E</div><div><div class="m-title">ECONOMIC BUYER</div><p>Maor Sason, CEO — final vendor-spend authority, freshly capitalized post-Series B; Nadav Hollander (CFO) co-signs.</p></div></div>
+        <div class="m-row"><div class="letter">D</div><div><div class="m-title">DECISION CRITERIA</div><p>Unified visibility across AWS + GCP + Kafka + MongoDB; minimal added overhead for a lean team; TCO vs. self-managed Prometheus/Grafana plus a paid New Relic contract.</p></div></div>
+        <div class="m-row"><div class="letter">D</div><div><div class="m-title">DECISION PROCESS</div><p>Oz Giat / Erez Schiller (DevOps &amp; Platform) technical evaluation → Amit Porat (CTO) sponsorship → Nadav Hollander (CFO) / Maor Sason (CEO) commercial approval.</p></div></div>
+        <div class="m-row"><div class="letter">I</div><div><div class="m-title">IDENTIFY PAIN</div><p>Fragmented, partly self-managed observability under 14x YoY growth, in a business where blind spots are measured in unverified money movement.</p></div></div>
+        <div class="m-row highlight"><div class="letter">C</div><div><div class="m-title">CHAMPION</div><p>Oz Giat, Head of DevOps — best-fit candidate by function, not yet self-declared. The realistic entry point, not a guess dressed up as a name.</p></div></div>
+        <div class="m-row highlight"><div class="letter">C</div><div><div class="m-title">COMPETITION</div><p>Status quo (self-hosted Prometheus + Grafana, paid New Relic) — plus a real build-vs-buy risk, given a stack that already leans heavily open-source and infra-as-code.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tear"></div>
+
+  <section id="outreach">
+    <div class="sheet">
+      <div class="section-head"><h2>Prospecting Email — 3 Variants</h2><span class="num mono">08</span></div>
+      <p class="lede">One clear, low-pressure ask in each — 15 minutes, no hard pitch.</p>
+
+      <details class="email-card" open>
+        <summary>Direct &amp; Technical — to Oz Giat <span class="tag">Head of DevOps</span></summary>
+        <div class="email-body-x">
+          <div class="subj">Subject: Three dashboards, one incident, zero minutes to spare</div>
+          <p>Hi Oz, saw your team's DevOps req lists Prometheus, Grafana, New Relic, and OpenTelemetry across an AWS EKS + GCP + Kafka + MongoDB Atlas stack — capable, and also three places to look during an incident on a platform now settling over $1B a year.</p>
+          <p>I work with fast-scaling payments and gaming infra teams on exactly this: one dataset, so a checkout-latency spike and a Kafka lag show up as one trace, not three tabs.</p>
+          <p>Worth 15 minutes to compare notes on where that's costing your team time today?</p>
+        </div>
+      </details>
+
+      <details class="email-card">
+        <summary>Warm &amp; Respectful — to Maor Sason <span class="tag">CEO</span></summary>
+        <div class="email-body-x">
+          <div class="subj">Subject: Congrats on the $1B mark — a question about the next leg</div>
+          <p>Hi Maor, congratulations on crossing $1B in annualized DTC volume — from $500M in under a year, right after your Series B, is a rare curve. Roei's line about DTC becoming "a core part of the monetization stack," not an experiment, says a lot about the timing.</p>
+          <p>The pattern I see at that growth rate: what strains first is usually invisible to players and publishers — a delayed webhook, a slow settlement, a blind spot between clouds — until suddenly it isn't.</p>
+          <p>Would 15 minutes be useful to compare notes on how other payments platforms stay ahead of that?</p>
+        </div>
+      </details>
+
+      <details class="email-card">
+        <summary>The Full Bench — to Amit Porat <span class="tag">CTO</span></summary>
+        <div class="email-body-x">
+          <div class="subj">Subject: Four new leaders in two months — is the stack next?</div>
+          <p>Hi Amit, noticed Appcharge brought on a CFO, a CRO, and a Chief Strategy Officer within about six weeks of your Series B — a company professionalizing fast across finance, revenue, and strategy, right as you cross $1B in annualized volume.</p>
+          <p>I work with payments and gaming infra teams making the same shift on the engineering side — specifically, consolidating Prometheus, Grafana, and New Relic into one picture before an incident forces the question.</p>
+          <p>Worth 15 minutes to compare notes?</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    Self-initiated APQ · Appcharge · built by Nir Ventura, not assigned — same method as the Roll20 exercise, applied cold.
+  </footer>
+
+<script>
+(function () {
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* scroll progress bar */
+  var bar = document.getElementById('scrollProgress');
+  function updateBar() {
+    var h = document.documentElement;
+    var scrolled = h.scrollTop;
+    var height = h.scrollHeight - h.clientHeight;
+    bar.style.width = (height > 0 ? (scrolled / height) * 100 : 0) + '%';
+  }
+  document.addEventListener('scroll', updateBar, { passive: true });
+  updateBar();
+
+  /* count-up */
+  function formatCount(val, decimals, prefix, suffix) {
+    var n = decimals > 0 ? val.toFixed(decimals) : Math.round(val).toString();
+    return (prefix || '') + n + (suffix || '');
+  }
+  function animateCount(el) {
+    var target = parseFloat(el.getAttribute('data-count'));
+    var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+    var prefix = el.getAttribute('data-prefix') || '';
+    var suffix = el.getAttribute('data-suffix') || '';
+    if (reduceMotion) { el.textContent = formatCount(target, decimals, prefix, suffix); return; }
+    var start = null, duration = 1100;
+    function step(ts) {
+      if (!start) start = ts;
+      var progress = Math.min((ts - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = formatCount(target * eased, decimals, prefix, suffix);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* provider bar fill */
+  function animateBar(el) {
+    var target = el.getAttribute('data-target-width');
+    if (reduceMotion) { el.style.width = target + '%'; return; }
+    requestAnimationFrame(function () { el.style.width = target + '%'; });
+  }
+
+  /* log panel typing effect */
+  function typeLog() {
+    var tpl = document.getElementById('logTemplate');
+    var out = document.getElementById('logTyped');
+    var cursor = document.getElementById('logCursor');
+    if (!tpl || !out) return;
+    var html = tpl.innerHTML;
+    if (reduceMotion) { out.innerHTML = html; if (cursor) cursor.remove(); return; }
+    // Type as plain text with tags revealed at their position for simplicity: fall back to fade-in reveal of full block
+    out.innerHTML = html;
+    out.style.opacity = '0';
+    out.style.transition = 'opacity .5s ease';
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { out.style.opacity = '1'; });
+    });
+    setTimeout(function () { if (cursor) cursor.classList.remove('is-blinking'); if (cursor) cursor.style.display = 'none'; }, 900);
+  }
+
+  /* trigger once when scrolled into view */
+  var seen = new WeakSet();
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting || seen.has(entry.target)) return;
+      seen.add(entry.target);
+      if (entry.target.id === 'velocity') {
+        document.querySelectorAll('#velocity .amount[data-count]').forEach(animateCount);
+      }
+      if (entry.target.id === 'dashboard-mock') {
+        document.querySelectorAll('#dashboard-mock .kpi-value[data-count]').forEach(animateCount);
+        document.querySelectorAll('#dashboard-mock .provider-fill[data-target-width]').forEach(animateBar);
+        setTimeout(typeLog, 400);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  ['velocity', 'dashboard-mock'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) io.observe(el);
+  });
+})();
+</script>
+</body>
+</html>
